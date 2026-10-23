@@ -10,6 +10,8 @@
 
 Unlike basic "chat with PDF" prototypes that perform naive top-k vector searches and hallucinate page numbers, ResearchVault AI implements a multi-stage hybrid RAG pipeline with coreference resolution, multi-query expansion, Reciprocal Rank Fusion (RRF), neural cross-encoder reranking, extractive contextual compression, verifiable citations `[N]` mapped to exact document passages, autonomous **Research Mode** synthesis, cross-document comparison matrices, and mathematical RAG evaluation (Precision@K, Recall@K, MRR, NDCG@K, and Faithfulness).
 
+![ResearchVault AI Research Intelligence Dashboard](assets/dashboard-preview.png)
+
 ---
 
 ## 🏛️ System Architecture
@@ -73,9 +75,11 @@ flowchart TD
 6. **Cross-Encoder Neural Reranking**: Re-scores top 20–30 hybrid candidates with `cross-encoder/ms-marco-MiniLM-L-6-v2`.
 7. **Extractive Contextual Compression**: Extracts high-relevance sentences from chunks, removing boilerplate and reducing prompt token overhead while preserving passage attribution.
 
-### 3. Verifiable Citation Engine & Source Drawer
+### 3. Verifiable Citation Engine & Grounded RAG Chat
 - Inline numbered references `[1]`, `[2]` are strictly enforced by the system prompt.
 - Clicking any citation badge opens the **Source Inspector Drawer**, highlighting the exact document title, page number, section name, similarity score, rerank score, and supporting passage.
+
+![Grounded RAG Chat with Citation Engine](assets/rag-chat-preview.png)
 
 ### 4. Deep "Research Mode"
 - Autonomous research planning: Decomposes broad topics into 3 targeted sub-questions.
@@ -95,6 +99,8 @@ flowchart TD
   - Key Benchmark Results
   - Limitations & Trade-offs
   - Exact row-level citations
+
+![Multi-Document Comparison Matrix Extraction](assets/comparison-matrix-preview.png)
 
 ### 6. Mathematical RAG Evaluation Studio
 Run real benchmarks against gold-standard evaluation datasets and compute actual metrics:

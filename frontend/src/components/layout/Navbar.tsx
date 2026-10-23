@@ -46,10 +46,10 @@ export function Navbar({ onOpenUpload }: NavbarProps) {
         {/* User Badge */}
         <div className="flex items-center gap-2 pl-3 border-l border-slate-800">
           <div className="w-7 h-7 rounded-full bg-gradient-to-tr from-indigo-500 to-cyan-400 flex items-center justify-center text-xs font-bold text-white shadow-inner">
-            AV
+            G
           </div>
           <div className="text-left hidden sm:block">
-            <span className="block text-xs font-medium text-slate-200 leading-none">Dr. Alex Vance</span>
+            <span className="block text-xs font-medium text-slate-200 leading-none">Ganesh</span>
             <span className="block text-[10px] text-slate-400 leading-none mt-1">Lead AI Researcher</span>
           </div>
         </div>

@@ -27,7 +27,7 @@ async def get_current_user(
         new_demo = User(
             email="researcher@researchvault.ai",
             hashed_password=get_password_hash("ResearchVault2026!"),
-            full_name="Dr. Alex Vance",
+            full_name="Ganesh",
             is_active=True,
             is_superuser=True
         )

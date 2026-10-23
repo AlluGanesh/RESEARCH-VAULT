@@ -186,6 +186,13 @@ pytest tests/ -v
 
 ---
 
+## 👤 Author
+
+**Ganesh**  
+ResearchVault AI — Research Intelligence & RAG Platform
+
+---
+
 ## 📄 License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.

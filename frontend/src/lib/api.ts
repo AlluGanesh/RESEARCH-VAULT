@@ -9,7 +9,12 @@ import {
   EvaluationRun,
   ObservabilityStats,
   QueryTrace,
-  KnowledgeGraphData
+  KnowledgeGraphData,
+  HallucinationReport,
+  HumanBenchmarkReport,
+  HybridSimulateResponse,
+  HybridBenchmarkResponse,
+  OptimalRecommendation
 } from '@/types';
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api';
@@ -193,6 +198,68 @@ class ApiClient {
       body: JSON.stringify(payload)
     });
   }
+
+  // Hallucination Detection & Scoring
+  async detectHallucinations(payload: {
+    answer_text: string;
+    context_passages?: any[];
+    query?: string;
+    llm_provider?: string;
+  }): Promise<HallucinationReport> {
+    return this.request<HallucinationReport>('/evaluation/hallucination', {
+      method: 'POST',
+      body: JSON.stringify(payload)
+    });
+  }
+
+  async runHumanBenchmark(): Promise<HumanBenchmarkReport> {
+    return this.request<HumanBenchmarkReport>('/evaluation/hallucination/human-benchmark', {
+      method: 'POST'
+    });
+  }
+
+  async getHallucinationHistory(limit = 15): Promise<any[]> {
+    return this.request<any[]>(`/evaluation/hallucination/history?limit=${limit}`);
+  }
+
+  // Hybrid Retrieval Ratio Simulator & Optimizer
+  async simulateHybridRetrieval(payload: {
+    query: string;
+    dense_weight: number;
+    sparse_weight: number;
+    k?: number;
+  }): Promise<HybridSimulateResponse> {
+    return this.request<HybridSimulateResponse>('/evaluation/hybrid-simulate', {
+      method: 'POST',
+      body: JSON.stringify(payload)
+    });
+  }
+
+  async runHybridBenchmark(payload: {
+    dataset_id: string;
+    k?: number;
+    ratios?: number[];
+  }): Promise<HybridBenchmarkResponse> {
+    return this.request<HybridBenchmarkResponse>('/evaluation/hybrid-benchmark', {
+      method: 'POST',
+      body: JSON.stringify(payload)
+    });
+  }
+
+  async optimizeRatio(payload: {
+    dataset_id: string;
+    k?: number;
+  }): Promise<OptimalRecommendation> {
+    return this.request<OptimalRecommendation>('/evaluation/optimize-ratio', {
+      method: 'POST',
+      body: JSON.stringify(payload)
+    });
+  }
+
+  async getBenchmarkResults(limit = 10): Promise<any[]> {
+    return this.request<any[]>(`/evaluation/benchmark-results?limit=${limit}`);
+  }
+
 
   // Observability
   async getObservabilityStats(): Promise<ObservabilityStats> {

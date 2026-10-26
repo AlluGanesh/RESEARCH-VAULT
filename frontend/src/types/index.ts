@@ -269,3 +269,115 @@ export interface KnowledgeGraphData {
   nodes: KnowledgeNode[];
   edges: KnowledgeEdge[];
 }
+
+export interface ClaimVerificationItem {
+  claim_id: string;
+  claim_text: string;
+  original_sentence: string;
+  cited_indices: number[];
+  verdict: 'SUPPORTED' | 'CONTRADICTED' | 'UNVERIFIABLE';
+  confidence: number;
+  evidence_snippet?: string;
+  matched_doc_title?: string;
+  matched_chunk_id?: string;
+  citation_valid: boolean;
+  explanation?: string;
+}
+
+export interface HallucinationReport {
+  total_claims: number;
+  supported_count: number;
+  contradicted_count: number;
+  unverifiable_count: number;
+  hallucination_rate: number;
+  claim_support_rate: number;
+  contradiction_rate: number;
+  unverifiable_rate: number;
+  citation_valid_count: number;
+  total_citations_checked: number;
+  citation_accuracy: number;
+  verified_claims: ClaimVerificationItem[];
+  execution_time_ms: number;
+}
+
+export interface HumanBenchmarkCaseItem {
+  id: string;
+  claim: string;
+  gold_verdict: string;
+  predicted_verdict: string;
+  confidence: number;
+  is_match: boolean;
+}
+
+export interface HumanBenchmarkReport {
+  total_benchmark_cases: number;
+  correct_matches: number;
+  benchmark_accuracy: number;
+  test_cases: HumanBenchmarkCaseItem[];
+}
+
+export interface HybridCandidateItem {
+  chunk_id?: string;
+  document_title?: string;
+  retrieval_source: 'dense_only' | 'sparse_only' | 'hybrid_overlap';
+  rrf_score: number;
+  vector_score?: number;
+  lexical_score?: number;
+  passage_preview: string;
+}
+
+export interface HybridSimulateResponse {
+  query: string;
+  dense_weight: number;
+  sparse_weight: number;
+  k: number;
+  total_retrieved: number;
+  overlap_count: number;
+  overlap_ratio: number;
+  dense_only_count: number;
+  sparse_only_count: number;
+  latency_ms: number;
+  candidates: HybridCandidateItem[];
+}
+
+export interface BenchmarkCurvePoint {
+  dense_weight: number;
+  sparse_weight: number;
+  dense_pct: number;
+  sparse_pct: number;
+  mean_ndcg: number;
+  mean_recall: number;
+  mean_precision: number;
+  mean_mrr: number;
+  mean_overlap: number;
+  mean_dense_only: number;
+  mean_sparse_only: number;
+  avg_latency_ms: number;
+  estimated_hallucination_rate: number;
+  composite_score: number;
+}
+
+export interface OptimalRecommendation {
+  dense_weight: number;
+  sparse_weight: number;
+  dense_pct: number;
+  sparse_pct: number;
+  peak_ndcg: number;
+  peak_recall: number;
+  composite_score: number;
+  estimated_hallucination_rate: number;
+  ndcg_lift_over_dense_pct: number;
+  ndcg_lift_over_bm25_pct: number;
+  rationale: string;
+}
+
+export interface HybridBenchmarkResponse {
+  dataset_id: string;
+  dataset_name: string;
+  k: number;
+  total_test_cases: number;
+  benchmark_curves: BenchmarkCurvePoint[];
+  optimal_recommendation: OptimalRecommendation;
+  execution_time_ms: number;
+}
+

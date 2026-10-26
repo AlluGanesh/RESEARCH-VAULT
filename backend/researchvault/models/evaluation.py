@@ -97,3 +97,55 @@ class EvaluationResult(Base):
 
     # Relationships
     run = relationship("EvaluationRun", back_populates="results")
+
+
+class HybridBenchmarkRun(Base):
+    __tablename__ = "hybrid_benchmark_runs"
+
+    id = Column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
+    dataset_id = Column(String(36), ForeignKey("evaluation_datasets.id", ondelete="CASCADE"), nullable=False, index=True)
+    user_id = Column(String(36), ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
+
+    dataset_name = Column(String(255), nullable=False)
+    k = Column(Integer, default=10)
+    total_test_cases = Column(Integer, default=0)
+
+    # JSON representation of curve points
+    benchmark_curves = Column(JSON, default=list)
+
+    # Optimal ratio findings
+    optimal_dense_weight = Column(Float, default=0.6)
+    optimal_sparse_weight = Column(Float, default=0.4)
+    peak_ndcg = Column(Float, default=0.0)
+    peak_recall = Column(Float, default=0.0)
+    composite_score = Column(Float, default=0.0)
+    estimated_hallucination_rate = Column(Float, default=0.0)
+    rationale = Column(Text, nullable=True)
+
+    execution_time_ms = Column(Float, default=0.0)
+    created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
+
+
+class HallucinationAuditLog(Base):
+    __tablename__ = "hallucination_audit_logs"
+
+    id = Column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
+    user_id = Column(String(36), ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
+
+    query = Column(Text, nullable=True)
+    answer_text = Column(Text, nullable=False)
+    total_claims = Column(Integer, default=0)
+    supported_count = Column(Integer, default=0)
+    contradicted_count = Column(Integer, default=0)
+    unverifiable_count = Column(Integer, default=0)
+
+    hallucination_rate = Column(Float, default=0.0)
+    claim_support_rate = Column(Float, default=0.0)
+    contradiction_rate = Column(Float, default=0.0)
+    unverifiable_rate = Column(Float, default=0.0)
+    citation_accuracy = Column(Float, default=0.0)
+
+    verified_claims = Column(JSON, default=list)
+    execution_time_ms = Column(Float, default=0.0)
+    created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
+

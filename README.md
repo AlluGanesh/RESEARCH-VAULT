@@ -102,18 +102,33 @@ flowchart TD
 
 ![Multi-Document Comparison Matrix Extraction](assets/comparison-matrix-preview.png)
 
-### 6. Mathematical RAG Evaluation Studio
-Run real benchmarks against gold-standard evaluation datasets and compute actual metrics:
-- **Retrieval Metrics**:
+### 6. RAG Reliability Lab & Evaluation Studio
+ResearchVault AI features a dedicated **RAG Reliability Lab** transforming the platform into a rigorous RAG experimentation suite:
+- **Claim-Level Hallucination Detection Engine**:
+  - Evaluates generated AI answers at the individual atomic claim level rather than relying on holistic LLM guesses.
+  - Verification workflow:
+    $$\text{Answer} \longrightarrow \text{Claim Extraction} \longrightarrow \text{Evidence Retrieval} \longrightarrow \text{NLI / LLM Verification} \longrightarrow \{\text{Supported}, \text{Contradicted}, \text{Unverifiable}\}$$
+  - Quantifies exact claim metrics:
+    $$\text{Hallucination Rate} = \frac{\text{Unsupported} + \text{Contradicted Claims}}{\text{Total Factual Claims}} \times 100$$
+    $$\text{Claim Support Rate} = \frac{\text{Supported Claims}}{\text{Total Claims}} \times 100 \qquad \text{Contradiction Rate} = \frac{\text{Contradicted Claims}}{\text{Total Claims}} \times 100$$
+  - Tracks separate contradiction vs unsupported rates to avoid conflating ungrounded statements with explicitly false assertions.
+  - Validates citations `[N]` against supporting passage snippets.
+  - Benchmarked against human-labeled gold-standard verification datasets.
+- **Configurable Weighted Hybrid Retrieval Ratio Simulator**:
+  - Fine-tune dense semantic search ($w_d$) vs sparse BM25 search ($w_s$) using weighted Reciprocal Rank Fusion:
+    $$S(d) = \frac{w_d}{k + r_d(d)} + \frac{w_s}{k + r_s(d)} \quad (w_d + w_s = 1.0)$$
+  - Real-time diagnostic stream measuring Overlap@K, Dense-only hits, Sparse BM25 hits, and parallel retrieval latency.
+  - Quick-copy configuration export for production deployments.
+- **Hybrid Retrieval Benchmark & Automatic Ratio Optimizer**:
+  - Sweeps ratios from pure BM25 (0:100) to pure Dense (100:0) across gold evaluation test cases.
+  - Plots multi-metric benchmark curves: NDCG@10, Recall@10, Overlap@10, and downstream Hallucination correlation.
+  - Computes Pareto-optimal ratio recommendation with relative performance lift and natural-language rationale.
+- **Mathematical Benchmark Metrics**:
   - **Precision@K**: $\frac{|\text{Retrieved@K} \cap \text{Relevant}|}{K}$
   - **Recall@K**: $\frac{|\text{Retrieved@K} \cap \text{Relevant}|}{|\text{Relevant}|}$
   - **Mean Reciprocal Rank (MRR)**: $\frac{1}{\text{rank of first relevant item}}$
   - **NDCG@K**: $\frac{\text{DCG@K}}{\text{IDCG@K}}$ where $\text{DCG@K} = \sum_{i=1}^K \frac{\text{rel}_i}{\log_2(i+1)}$
-- **Generation Metrics**:
-  - **Faithfulness**: Proportion of generated statements supported by retrieved context.
-  - **Answer Relevance**: Key concept overlap between generated response and ground truth.
-  - **Context Relevance**: Proportion of retrieved chunks relevant to query intent.
-  - **Citation Accuracy**: Proportion of valid citations referencing grounded evidence.
+  - **Faithfulness**, **Answer Relevance**, and **Citation Accuracy**.
 
 ### 7. AI Observability & Query Tracing
 - Full step-by-step pipeline debugger displaying:

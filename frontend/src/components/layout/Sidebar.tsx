@@ -24,7 +24,7 @@ const navigation = [
   { name: 'Research Chat', href: '/chat', icon: MessageSquare },
   { name: 'Research Mode', href: '/research', icon: Sparkles, badge: 'Pro' },
   { name: 'Document Compare', href: '/compare', icon: Columns },
-  { name: 'RAG Evaluation', href: '/evaluation', icon: CheckCircle2 },
+  { name: 'RAG Reliability Lab', href: '/evaluation', icon: CheckCircle2, badge: 'Lab' },
   { name: 'AI Observability', href: '/observability', icon: Activity },
   { name: 'Knowledge Graph', href: '/knowledge-graph', icon: Network },
   { name: 'Settings', href: '/settings', icon: Settings },

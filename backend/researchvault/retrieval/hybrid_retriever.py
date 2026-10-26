@@ -29,18 +29,34 @@ class HybridRetriever:
         user_id: Optional[str] = None,
         collection_id: Optional[str] = None,
         document_ids: Optional[List[str]] = None,
-        author: Optional[str] = None
+        author: Optional[str] = None,
+        dense_weight: Optional[float] = None,
+        sparse_weight: Optional[float] = None,
+        rrf_k: Optional[int] = None
     ) -> List[Dict[str, Any]]:
         """
         Executes hybrid retrieval:
         1. Dense Vector search across Qdrant with all queries in expansion list.
         2. Sparse BM25 search across database chunks.
-        3. Reciprocal Rank Fusion (RRF) deduplication & unified ranking.
+        3. Reciprocal Rank Fusion (RRF) with normalized weights:
+           S(d) = w_d / (k + r_d(d)) + w_s / (k + r_s(d))
+           where w_d + w_s = 1.0.
         """
         if not queries:
             return []
 
-        primary_query = queries[0]
+        # Calculate normalized weights
+        w_d = dense_weight if dense_weight is not None else self.vector_weight
+        w_s = sparse_weight if sparse_weight is not None else self.lexical_weight
+        total_w = w_d + w_s
+        if total_w > 0:
+            norm_dense_w = w_d / total_w
+            norm_sparse_w = w_s / total_w
+        else:
+            norm_dense_w = 0.5
+            norm_sparse_w = 0.5
+
+        k_const = rrf_k or self.rrf_k
         
         # 1. Vector Search (multi-query)
         vector_results_by_chunk: Dict[str, Dict[str, Any]] = {}
@@ -85,46 +101,58 @@ class HybridRetriever:
         except Exception as e:
             logger.error(f"Lexical search failed: {e}")
 
-        # 3. Reciprocal Rank Fusion (RRF)
-        # RRF_Score(d) = sum( w / (k + rank) )
+        # 3. Weighted Reciprocal Rank Fusion (RRF)
+        # S(d) = w_d / (k + r_d(d)) + w_s / (k + r_s(d))
         fused_scores: Dict[str, float] = {}
         fused_items: Dict[str, Dict[str, Any]] = {}
 
-        # Process vector ranks
+        # Process vector ranks (dense)
         for rank_idx, item in enumerate(sorted_vector_candidates):
             cid = item.get("chunk_id") or item.get("point_id")
             if not cid:
                 continue
             rank = rank_idx + 1
-            score_contrib = self.vector_weight / (self.rrf_k + rank)
+            score_contrib = norm_dense_w / (k_const + rank)
             fused_scores[cid] = fused_scores.get(cid, 0.0) + score_contrib
             if cid not in fused_items:
                 fused_items[cid] = dict(item)
             fused_items[cid]["vector_rank"] = rank
             fused_items[cid]["vector_score"] = item.get("score", 0.0)
+            fused_items[cid]["has_dense"] = True
 
-        # Process lexical ranks
+        # Process lexical ranks (sparse)
         for rank_idx, item in enumerate(lexical_candidates):
             cid = item.get("chunk_id")
             if not cid:
                 continue
             rank = rank_idx + 1
-            score_contrib = self.lexical_weight / (self.rrf_k + rank)
+            score_contrib = norm_sparse_w / (k_const + rank)
             fused_scores[cid] = fused_scores.get(cid, 0.0) + score_contrib
             if cid not in fused_items:
                 fused_items[cid] = dict(item)
             fused_items[cid]["lexical_rank"] = rank
             fused_items[cid]["lexical_score"] = item.get("lexical_score", 0.0)
+            fused_items[cid]["has_sparse"] = True
 
-        # Build output list with RRF score
+        # Build output list with weighted RRF score and diagnostic tags
         fused_results = []
         for cid, total_rrf in fused_scores.items():
             candidate = fused_items[cid]
             candidate["rrf_score"] = float(total_rrf)
-            # Ensure chunk_id is present
             candidate["chunk_id"] = cid
+
+            has_d = candidate.get("has_dense", False)
+            has_s = candidate.get("has_sparse", False)
+            if has_d and has_s:
+                candidate["retrieval_source"] = "hybrid_overlap"
+            elif has_d:
+                candidate["retrieval_source"] = "dense_only"
+            else:
+                candidate["retrieval_source"] = "sparse_only"
+
             fused_results.append(candidate)
 
         # Sort descending by RRF score
         fused_results.sort(key=lambda x: x["rrf_score"], reverse=True)
         return fused_results[:top_k]
+
